@@ -6,6 +6,7 @@ use CodeIgniter\Filters\FilterInterface;
 use CodeIgniter\HTTP\RequestInterface;
 use CodeIgniter\HTTP\ResponseInterface;
 use Firebase\JWT\JWT;
+use Firebase\JWT\Key;
 use Config\Services;
 
 class Auth implements FilterInterface
@@ -35,10 +36,13 @@ class Auth implements FilterInterface
         $token = explode(' ', $header)[1];
  
         try {
-            JWT::decode($token, $key, ['HS256']);
+            JWT::decode($token, new Key($key, 'HS256'));
         } catch (\Throwable $th) {
             return Services::response()
-                            ->setJSON(['msg' => 'Invalid Token'])
+                            ->setJSON(['msg' => 'Invalid Token',
+                            'header' => $header,
+                            'token' => $token,
+                            'key'    => $key])
                             ->setStatusCode(ResponseInterface::HTTP_UNAUTHORIZED);
         }
     }
